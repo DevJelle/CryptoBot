@@ -1,5 +1,8 @@
 import discord
-from discord.ext import commands
+import asyncio
+#import time
+from discord.ext import commands, tasks
+from datetime import datetime, date, time, timezone
 
 from lxml import html
 from bs4 import BeautifulSoup
@@ -14,9 +17,33 @@ client = commands.Bot(command_prefix = '-')
 client.remove_command("help")
 
 
+
+async def mainStatus():
+    
+    cryptoChannel = client.get_channel(821018785133232128)
+    timestamp = datetime.now()
+
+    rStatus = requests.get('https://8b380bb9-5237-4ef8-a0cf-3a6b831dba72.id.repl.co/')
+    statusSoup = BeautifulSoup(rStatus.content, "html.parser")
+    status = statusSoup.find_all(text=True)
+    
+    if 'Hello. I am alive!' in status:
+         message = await cryptoChannel.send('**'+"CryptoBot is currently OPERATING"+'**'+" \U0001f7e2"+" *More info here:* https://stats.uptimerobot.com/oX9yvSXWMD/787507457 " 
+         + "                *Last updated:* " + str(timestamp.strftime(r"%Y-%m-%d %H:%M:%S")))
+    else:
+        message = await cryptoChannel.send('**'+"CryptoBot is currently DOWN"+'**'+" \U0001f534"+" *More info here:* https://stats.uptimerobot.com/oX9yvSXWMD/787507457 "
+        + "                 *Last updated:* " + str(timestamp.strftime(r"%Y-%m-%d %H:%M:%S")))
+
+    await asyncio.sleep(300)
+    await message.delete()
+
 @client.event
 async def on_ready(): 
     print('Bot is ready.')
+    while True:
+        await mainStatus()
+        await asyncio.sleep(1)
+        
 
 @client.command()
 async def help(ctx):
@@ -55,6 +82,19 @@ async def doge(ctx):
 async def sus(ctx):
     susResult = str(randint(0,100))
     await ctx.send(ctx.author.mention + " You are " + susResult + "% " + "sus **ඞ**")
+
+@client.command()
+async def status(ctx):
+    rStatus = requests.get('https://8b380bb9-5237-4ef8-a0cf-3a6b831dba72.id.repl.co/')
+    statusSoup = BeautifulSoup(rStatus.content, "html.parser")
+    status = statusSoup.find_all(text=True)
+    
+    if 'Hello. I am alive!' in status:
+        await ctx.send('**'+"CryptoBot is currently OPERATING"+'**'+" \U0001f7e2"+" *More info here:* https://stats.uptimerobot.com/oX9yvSXWMD/787507457 ")
+    else:
+        await ctx.send('**'+"CryptoBot is currently DOWN"+'**'+" \U0001f534"+" *More info here:* https://stats.uptimerobot.com/oX9yvSXWMD/787507457 ")
+
+    
 
 keep_alive()
 client.run('token')
